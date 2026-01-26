@@ -392,6 +392,111 @@
       text-align: left;
     }
 
+    .speech-area {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 15px;
+      transition: background-color 0.5s ease;
+    }
+
+    .speech-area.listening {
+      background: rgba(46, 139, 192, 0.1);
+    }
+
+    .speech-area.good {
+      background: rgba(39, 174, 96, 0.2);
+    }
+
+    .speech-area.poor {
+      background: rgba(231, 76, 60, 0.2);
+    }
+
+    .speech-btn {
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: white;
+      border: none;
+      padding: 20px 40px;
+      border-radius: 50px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .speech-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(231, 76, 60, 0.4);
+    }
+
+    .speech-btn.recording {
+      background: linear-gradient(135deg, #27ae60, #219a52);
+      animation: pulse 1.5s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.4); }
+      50% { box-shadow: 0 0 0 15px rgba(39, 174, 96, 0); }
+    }
+
+    .speech-result {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 10px;
+      text-align: left;
+    }
+
+    .speech-result-label {
+      font-size: 0.9rem;
+      color: var(--ocean-mid);
+      margin-bottom: 8px;
+    }
+
+    .speech-result-text {
+      font-size: 1.1rem;
+      color: var(--text-dark);
+      line-height: 1.8;
+    }
+
+    .similarity-score {
+      margin-top: 15px;
+      padding: 10px 20px;
+      border-radius: 20px;
+      display: inline-block;
+      font-weight: 600;
+    }
+
+    .similarity-score.excellent {
+      background: rgba(39, 174, 96, 0.2);
+      color: #27ae60;
+    }
+
+    .similarity-score.good {
+      background: rgba(46, 139, 192, 0.2);
+      color: #2e8bc0;
+    }
+
+    .similarity-score.fair {
+      background: rgba(243, 156, 18, 0.2);
+      color: #f39c12;
+    }
+
+    .similarity-score.poor {
+      background: rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+    }
+
+    .speech-not-supported {
+      color: var(--fish-red);
+      padding: 15px;
+      background: rgba(231, 76, 60, 0.1);
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+
     /* Success animation */
     .success-overlay {
       position: fixed;
@@ -738,6 +843,54 @@
     let currentSection = 0;
     let revealedSections = {};
     let fillAnswers = {};
+    let fillSectionIndex = 0;
+
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSound(type) {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      if (type === 'correct') {
+        oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1);
+        oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2);
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialDecayTo && gainNode.gain.exponentialDecayTo(0.01, audioContext.currentTime + 0.4);
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.4);
+      } else if (type === 'incorrect') {
+        oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(150, audioContext.currentTime + 0.15);
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+      } else if (type === 'success') {
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, i) => {
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          osc.frequency.setValueAtTime(freq, audioContext.currentTime + i * 0.15);
+          gain.gain.setValueAtTime(0.3, audioContext.currentTime + i * 0.15);
+          gain.gain.linearRampToValueAtTime(0.01, audioContext.currentTime + i * 0.15 + 0.3);
+          osc.start(audioContext.currentTime + i * 0.15);
+          osc.stop(audioContext.currentTime + i * 0.15 + 0.3);
+        });
+      } else if (type === 'click') {
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.05);
+      }
+    }
 
     // Initialize
     function init() {
@@ -834,38 +987,272 @@
       `;
     }
 
-    // Fill mode - blanks to fill
+    // Fill mode - section by section with instant feedback
     function renderFillMode(container) {
-      let html = '<div class="story-card"><div class="all-sections">';
+      const section = storyData[fillSectionIndex];
+      const allCorrect = checkSectionComplete(fillSectionIndex);
       
-      storyData.forEach((section, sIndex) => {
-        html += `
-          <div class="mini-section">
-            <div class="mini-section-header">
-              <span class="section-number">${section.id}</span>
-              <span>${section.icon}</span>
-              <span>${section.title}</span>
-            </div>
-            <div class="story-text">
-              <p>${createBlanks(section.text, section.blanks, sIndex)}</p>
+      container.innerHTML = `
+        <div class="story-card">
+          <div class="section-header">
+            <span class="section-number">${section.id}</span>
+            <span class="section-icon">${section.icon}</span>
+            <div>
+              <div class="section-title">${section.title}</div>
             </div>
           </div>
-        `;
-      });
-
-      html += `
+          <div class="story-text">
+            <p>${createBlanks(section.text, section.blanks, fillSectionIndex)}</p>
+          </div>
+          <div id="section-score"></div>
+          <div class="nav-buttons">
+            <button class="nav-btn prev" onclick="prevFillSection()" ${fillSectionIndex === 0 ? 'disabled' : ''}>
+              ⬅️ 上一段
+            </button>
+            <button class="nav-btn next" onclick="nextFillSection()">
+              ${fillSectionIndex === storyData.length - 1 ? '🎉 完成！' : '下一段 ➡️'}
+            </button>
+          </div>
         </div>
-        <button class="check-btn" onclick="checkAllAnswers()">🔍 檢查答案</button>
-        <div id="score-area"></div>
-      </div>`;
+      `;
       
-      container.innerHTML = html;
+      document.querySelectorAll('.blank').forEach(input => {
+        restoreBlankState(input);
+      });
+    }
+    
+    function checkSectionComplete(sectionIndex) {
+      const section = storyData[sectionIndex];
+      return section.blanks.every((blank, bIndex) => {
+        const key = `${sectionIndex}-${bIndex}`;
+        return fillAnswers[key] === blank;
+      });
+    }
+    
+    function restoreBlankState(input) {
+      const key = input.dataset.key;
+      const answer = input.dataset.answer;
+      const savedValue = fillAnswers[key] || '';
+      if (savedValue === answer) {
+        input.classList.add('correct');
+        input.classList.remove('incorrect');
+      }
+    }
+    
+    function prevFillSection() {
+      if (fillSectionIndex > 0) {
+        fillSectionIndex--;
+        playSound('click');
+        renderContent();
+      }
+    }
+    
+    function nextFillSection() {
+      if (fillSectionIndex < storyData.length - 1) {
+        fillSectionIndex++;
+        playSound('click');
+        renderContent();
+      } else {
+        const allComplete = storyData.every((_, idx) => checkSectionComplete(idx));
+        if (allComplete) {
+          playSound('success');
+          showSuccess('你完成所有填空了！太厲害了！');
+        } else {
+          playSound('success');
+          showSuccess('你練習完所有段落了！');
+        }
+      }
     }
 
-    // Recite mode - only prompts, reveal on click
+    // Recite mode - with speech recognition
+    let recognition = null;
+    let isRecording = false;
+    
+    function initSpeechRecognition() {
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'zh-TW';
+        
+        recognition.onresult = (event) => {
+          let transcript = '';
+          for (let i = 0; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+          }
+          updateSpeechResult(transcript);
+        };
+        
+        recognition.onerror = (event) => {
+          console.error('Speech recognition error:', event.error);
+          stopRecording();
+        };
+        
+        recognition.onend = () => {
+          if (isRecording) {
+            recognition.start();
+          }
+        };
+        
+        return true;
+      }
+      return false;
+    }
+    
+    function toggleRecording() {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    }
+    
+    function startRecording() {
+      if (!recognition && !initSpeechRecognition()) {
+        return;
+      }
+      
+      isRecording = true;
+      recognition.start();
+      
+      const btn = document.getElementById('speech-btn');
+      if (btn) {
+        btn.classList.add('recording');
+        btn.innerHTML = '🎙️ 錄音中... 點擊停止';
+      }
+      
+      const speechArea = document.getElementById('speech-area');
+      if (speechArea) {
+        speechArea.classList.add('listening');
+        speechArea.classList.remove('good', 'poor');
+      }
+      
+      document.getElementById('speech-result-container').innerHTML = `
+        <div class="speech-result">
+          <div class="speech-result-label">你說的內容：</div>
+          <div class="speech-result-text" id="speech-text" style="color: #888;">正在聽...</div>
+        </div>
+      `;
+    }
+    
+    function stopRecording() {
+      isRecording = false;
+      if (recognition) {
+        recognition.stop();
+      }
+      
+      const btn = document.getElementById('speech-btn');
+      if (btn) {
+        btn.classList.remove('recording');
+        btn.innerHTML = '🎤 開始說故事';
+      }
+      
+      const speechArea = document.getElementById('speech-area');
+      if (speechArea) {
+        speechArea.classList.remove('listening');
+      }
+    }
+    
+    function updateSpeechResult(transcript) {
+      const speechText = document.getElementById('speech-text');
+      if (speechText) {
+        speechText.textContent = transcript || '正在聽...';
+        speechText.style.color = transcript ? 'var(--text-dark)' : '#888';
+      }
+      
+      if (transcript && transcript.length > 5) {
+        const section = storyData[currentSection];
+        const similarity = calculateSimilarity(transcript, section.text);
+        showSimilarityFeedback(similarity);
+      }
+    }
+    
+    function calculateSimilarity(spoken, original) {
+      const cleanSpoken = spoken.replace(/[，。、！？「」\s]/g, '').toLowerCase();
+      const cleanOriginal = original.replace(/[，。、！？「」\n\s]/g, '').toLowerCase();
+      
+      let matchCount = 0;
+      const windowSize = 2;
+      
+      for (let i = 0; i <= cleanSpoken.length - windowSize; i++) {
+        const chunk = cleanSpoken.substring(i, i + windowSize);
+        if (cleanOriginal.includes(chunk)) {
+          matchCount++;
+        }
+      }
+      
+      const maxPossible = Math.max(cleanSpoken.length - windowSize + 1, 1);
+      const similarity = (matchCount / maxPossible) * 100;
+      
+      const section = storyData[currentSection];
+      let keywordMatches = 0;
+      section.keywords.forEach(keyword => {
+        const cleanKeyword = keyword.replace(/[，。、！？「」\s]/g, '');
+        if (cleanSpoken.includes(cleanKeyword)) {
+          keywordMatches++;
+        }
+      });
+      const keywordBonus = (keywordMatches / section.keywords.length) * 30;
+      
+      return Math.min(100, similarity + keywordBonus);
+    }
+    
+    function showSimilarityFeedback(similarity) {
+      const speechArea = document.getElementById('speech-area');
+      const resultContainer = document.getElementById('speech-result-container');
+      
+      let level, message, className;
+      
+      if (similarity >= 70) {
+        level = '太棒了！🎉';
+        message = '你記得很清楚！';
+        className = 'excellent';
+        if (speechArea) {
+          speechArea.classList.remove('poor', 'listening');
+          speechArea.classList.add('good');
+        }
+        playSound('correct');
+      } else if (similarity >= 50) {
+        level = '不錯喔！👍';
+        message = '繼續加油！';
+        className = 'good';
+        if (speechArea) {
+          speechArea.classList.remove('poor', 'listening');
+          speechArea.classList.add('good');
+        }
+      } else if (similarity >= 30) {
+        level = '加油！💪';
+        message = '再多練習幾次';
+        className = 'fair';
+        if (speechArea) {
+          speechArea.classList.remove('good', 'poor', 'listening');
+        }
+      } else {
+        level = '再試一次 🌟';
+        message = '可以先看看答案再練習';
+        className = 'poor';
+        if (speechArea) {
+          speechArea.classList.remove('good', 'listening');
+          speechArea.classList.add('poor');
+        }
+        playSound('incorrect');
+      }
+      
+      const existingScore = document.querySelector('.similarity-score');
+      if (existingScore) {
+        existingScore.className = `similarity-score ${className}`;
+        existingScore.innerHTML = `${level} ${message}`;
+      } else {
+        const scoreHtml = `<div class="similarity-score ${className}">${level} ${message}</div>`;
+        resultContainer.innerHTML += scoreHtml;
+      }
+    }
+    
     function renderReciteMode(container) {
       const section = storyData[currentSection];
       const isRevealed = revealedSections[currentSection];
+      const speechSupported = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
 
       container.innerHTML = `
         <div class="story-card">
@@ -880,9 +1267,25 @@
             <div class="recite-icon">${section.icon}</div>
             <div class="recite-hint">試著說出這一段的內容...</div>
             <div class="recite-hint" style="font-size: 1rem; color: #888;">提示：${section.keywords.slice(0, 3).join('、')}</div>
-            <button class="reveal-btn" onclick="toggleReveal(${currentSection})">
-              ${isRevealed ? '🙈 隱藏答案' : '👀 看答案'}
-            </button>
+            
+            <div class="speech-area" id="speech-area">
+              ${speechSupported ? `
+                <button class="speech-btn" id="speech-btn" onclick="toggleRecording()">
+                  🎤 開始說故事
+                </button>
+                <div id="speech-result-container"></div>
+              ` : `
+                <div class="speech-not-supported">
+                  你的瀏覽器不支援語音辨識，請使用 Chrome 瀏覽器
+                </div>
+              `}
+            </div>
+            
+            <div style="margin-top: 20px;">
+              <button class="reveal-btn" onclick="toggleReveal(${currentSection})">
+                ${isRevealed ? '🙈 隱藏答案' : '👀 看答案'}
+              </button>
+            </div>
             ${isRevealed ? `
               <div class="revealed-text">
                 <div class="story-text">
@@ -901,6 +1304,8 @@
           </div>
         </div>
       `;
+      
+      stopRecording();
     }
 
     // Highlight keywords
@@ -931,7 +1336,7 @@
         result = result.replace(regex, (match) => {
           if (!replaced) {
             replaced = true;
-            return `<input type="text" class="blank" data-answer="${blank}" data-key="${key}" value="${savedValue}" onchange="saveFillAnswer('${key}', this.value)" placeholder="___">`;
+            return `<input type="text" class="blank" data-answer="${blank}" data-key="${key}" value="${savedValue}" oninput="checkBlankAnswer(this)" placeholder="___">`;
           }
           return match;
         });
@@ -940,54 +1345,66 @@
       return result;
     }
 
-    // Save fill answer
-    function saveFillAnswer(key, value) {
-      fillAnswers[key] = value;
-    }
-
-    // Check all fill answers
-    function checkAllAnswers() {
-      const blanks = document.querySelectorAll('.blank');
-      let correct = 0;
-      let total = blanks.length;
-
-      blanks.forEach(blank => {
-        const answer = blank.dataset.answer;
-        const value = blank.value.trim();
-        
-        if (value === answer) {
-          blank.classList.remove('incorrect');
-          blank.classList.add('correct');
-          correct++;
-        } else {
-          blank.classList.remove('correct');
-          blank.classList.add('incorrect');
-        }
-      });
-
-      const percentage = Math.round((correct / total) * 100);
+    // Check single blank answer with instant feedback
+    function checkBlankAnswer(input) {
+      const key = input.dataset.key;
+      const answer = input.dataset.answer;
+      const value = input.value.trim();
       
-      document.getElementById('score-area').innerHTML = `
-        <div class="score-display">
-          <div class="score-number">${correct}/${total}</div>
-          <div class="score-label">答對 ${percentage}%！${percentage === 100 ? '太厲害了！🎉' : percentage >= 70 ? '很棒！繼續加油！💪' : '再練習一下！🌟'}</div>
-          <button class="reset-btn" onclick="resetFill()">🔄 重新填寫</button>
-        </div>
-      `;
-
-      if (percentage === 100) {
-        showSuccess('你答對所有題目了！');
+      fillAnswers[key] = value;
+      saveProgress();
+      
+      if (value === '') {
+        input.classList.remove('correct', 'incorrect');
+        return;
+      }
+      
+      if (value === answer) {
+        input.classList.remove('incorrect');
+        input.classList.add('correct');
+        playSound('correct');
+        
+        const section = storyData[fillSectionIndex];
+        const allCorrect = section.blanks.every((blank, bIndex) => {
+          const k = `${fillSectionIndex}-${bIndex}`;
+          return fillAnswers[k] === blank;
+        });
+        
+        if (allCorrect) {
+          setTimeout(() => {
+            updateSectionScore(true);
+          }, 300);
+        }
+      } else if (value.length >= answer.length) {
+        input.classList.remove('correct');
+        input.classList.add('incorrect');
+        playSound('incorrect');
+      } else {
+        input.classList.remove('correct', 'incorrect');
+      }
+    }
+    
+    function updateSectionScore(complete) {
+      const scoreArea = document.getElementById('section-score');
+      if (scoreArea && complete) {
+        playSound('success');
+        scoreArea.innerHTML = `
+          <div class="score-display" style="margin-top: 20px;">
+            <div style="font-size: 2rem;">🎉</div>
+            <div class="score-label">這一段全對了！太棒了！</div>
+          </div>
+        `;
       }
     }
 
-    // Reset fill answers
-    function resetFill() {
-      fillAnswers = {};
-      document.querySelectorAll('.blank').forEach(blank => {
-        blank.value = '';
-        blank.classList.remove('correct', 'incorrect');
+    // Reset current section fill answers
+    function resetFillSection() {
+      const section = storyData[fillSectionIndex];
+      section.blanks.forEach((_, bIndex) => {
+        const key = `${fillSectionIndex}-${bIndex}`;
+        delete fillAnswers[key];
       });
-      document.getElementById('score-area').innerHTML = '';
+      renderContent();
     }
 
     // Toggle reveal
@@ -1000,6 +1417,7 @@
     function prevSection() {
       if (currentSection > 0) {
         currentSection--;
+        playSound('click');
         renderContent();
       }
     }
@@ -1007,17 +1425,23 @@
     function nextSection() {
       if (currentSection < storyData.length - 1) {
         currentSection++;
+        playSound('click');
         renderContent();
       } else {
+        playSound('success');
         showSuccess('你練習完整個故事了！');
       }
     }
 
     // Update progress
     function updateProgress() {
-      const progress = ((currentSection + 1) / storyData.length) * 100;
+      let sectionIdx = currentSection;
+      if (currentMode === 'fill') {
+        sectionIdx = fillSectionIndex;
+      }
+      const progress = ((sectionIdx + 1) / storyData.length) * 100;
       document.getElementById('progress-fill').style.width = progress + '%';
-      document.getElementById('progress-text').textContent = `第 ${currentSection + 1} 段 / 共 ${storyData.length} 段`;
+      document.getElementById('progress-text').textContent = `第 ${sectionIdx + 1} 段 / 共 ${storyData.length} 段`;
       saveProgress();
     }
 
@@ -1037,7 +1461,8 @@
       localStorage.setItem('swimmy-progress', JSON.stringify({
         currentSection,
         revealedSections,
-        fillAnswers
+        fillAnswers,
+        fillSectionIndex
       }));
     }
 
@@ -1049,6 +1474,7 @@
         currentSection = data.currentSection || 0;
         revealedSections = data.revealedSections || {};
         fillAnswers = data.fillAnswers || {};
+        fillSectionIndex = data.fillSectionIndex || 0;
       }
     }
 
