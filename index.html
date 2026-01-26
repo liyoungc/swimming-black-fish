@@ -497,6 +497,92 @@
       margin-top: 15px;
     }
 
+    /* 文字輸入框區域 */
+    .text-input-area {
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 15px;
+      border: 2px dashed var(--ocean-mid);
+    }
+
+    .text-input-label {
+      font-size: 1rem;
+      color: var(--ocean-deep);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .recite-textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 15px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      line-height: 1.8;
+      resize: vertical;
+      font-family: inherit;
+      transition: border-color 0.3s ease;
+    }
+
+    .recite-textarea:focus {
+      outline: none;
+      border-color: var(--ocean-mid);
+    }
+
+    .recite-textarea::placeholder {
+      color: #aaa;
+    }
+
+    .check-text-btn {
+      margin-top: 15px;
+      background: linear-gradient(135deg, var(--ocean-mid), var(--ocean-deep));
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .check-text-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(46, 139, 192, 0.4);
+    }
+
+    .check-text-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .input-method-divider {
+      display: flex;
+      align-items: center;
+      margin: 25px 0;
+      color: #888;
+    }
+
+    .input-method-divider::before,
+    .input-method-divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .input-method-divider span {
+      padding: 0 15px;
+      font-size: 0.9rem;
+    }
+
+    #text-result-container {
+      margin-top: 15px;
+    }
+
     .mode-tab {
       padding: 10px 20px;
       border: 2px solid var(--ocean-mid);
@@ -1294,14 +1380,71 @@
         speechText.textContent = transcript || '正在聽... 請開始說話';
         speechText.style.color = transcript ? 'var(--text-dark)' : '#888';
       }
-      
+
       if (transcript && transcript.length > 3) {
         const section = storyData[currentSection];
         const similarity = calculateSimilarity(transcript, section.text);
         showSimilarityFeedback(similarity, transcript.length);
       }
     }
-    
+
+    // 文字輸入相關函數
+    function onTextInputChange() {
+      const textInput = document.getElementById('recite-text-input');
+      const checkBtn = document.getElementById('check-text-btn');
+      if (textInput && checkBtn) {
+        const hasText = textInput.value.trim().length > 0;
+        checkBtn.disabled = !hasText;
+      }
+    }
+
+    function checkTextInput() {
+      const textInput = document.getElementById('recite-text-input');
+      if (!textInput) return;
+
+      const inputText = textInput.value.trim();
+      if (!inputText) return;
+
+      const section = storyData[currentSection];
+      const similarity = calculateSimilarity(inputText, section.text);
+      showTextSimilarityFeedback(similarity, inputText.length);
+    }
+
+    function showTextSimilarityFeedback(similarity, textLength) {
+      const resultContainer = document.getElementById('text-result-container');
+      if (!resultContainer) return;
+
+      let level, message, className;
+
+      if (similarity >= 60) {
+        level = '太棒了！';
+        message = '你記得很清楚！';
+        className = 'excellent';
+        if (textLength > 10) {
+          playSound('correct');
+        }
+      } else if (similarity >= 45) {
+        level = '不錯喔！';
+        message = '繼續加油！';
+        className = 'good';
+      } else if (similarity >= 30) {
+        level = '加油！';
+        message = '再多練習幾次';
+        className = 'fair';
+      } else {
+        level = '再試一次';
+        message = '可以看提示或答案';
+        className = 'poor';
+      }
+
+      resultContainer.innerHTML = `
+        <div class="similarity-score ${className}">
+          <span style="font-size: 1.5rem; font-weight: bold;">${similarity}%</span>
+          <span style="margin-left: 10px;">${level} ${message}</span>
+        </div>
+      `;
+    }
+
     function calculateSimilarity(spoken, original) {
       const cleanSpoken = spoken.replace(/[，。、！？「」\s]/g, '');
       const cleanOriginal = original.replace(/[，。、！？「」\n\s]/g, '');
@@ -1439,10 +1582,31 @@
               </div>
             `}
             
-            <div class="speech-area" id="speech-area" style="margin-top: 20px;">
+            <!-- 文字輸入區域 -->
+            <div class="text-input-area">
+              <div class="text-input-label">✏️ 輸入你記得的內容：</div>
+              <textarea
+                class="recite-textarea"
+                id="recite-text-input"
+                placeholder="在這裡輸入你背誦的內容..."
+                oninput="onTextInputChange()"
+              ></textarea>
+              <button class="check-text-btn" id="check-text-btn" onclick="checkTextInput()" disabled>
+                ✅ 檢查答案
+              </button>
+              <div id="text-result-container"></div>
+            </div>
+
+            <!-- 分隔線 -->
+            <div class="input-method-divider">
+              <span>或使用語音辨識</span>
+            </div>
+
+            <!-- 語音辨識區域 -->
+            <div class="speech-area" id="speech-area">
               ${speechSupported ? `
                 <button class="speech-btn" id="speech-btn" onclick="toggleRecording()">
-                  🎤 開始說故事
+                  🎤 按住說故事
                 </button>
                 <div id="speech-result-container"></div>
               ` : `
