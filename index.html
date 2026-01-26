@@ -946,6 +946,9 @@
       // Show/hide tips
       document.getElementById('tips-card').classList.toggle('hidden', mode !== 'read');
 
+      // Stop recording when switching modes
+      stopRecording();
+
       // Generate new blanks when entering fill mode
       if (mode === 'fill') {
         generateRandomBlanks();
@@ -1392,6 +1395,7 @@
     
     function setReciteMode(mode) {
       reciteMode = mode;
+      stopRecording();
       renderContent();
     }
     
@@ -1471,8 +1475,6 @@
           </div>
         </div>
       `;
-      
-      stopRecording();
     }
     
     function createCuedText(text, keywords) {
@@ -1613,6 +1615,7 @@
     function prevSection() {
       if (currentSection > 0) {
         currentSection--;
+        stopRecording();
         playSound('click');
         renderContent();
       }
@@ -1621,9 +1624,11 @@
     function nextSection() {
       if (currentSection < storyData.length - 1) {
         currentSection++;
+        stopRecording();
         playSound('click');
         renderContent();
       } else {
+        stopRecording();
         playSound('success');
         showSuccess('你練習完整個故事了！');
       }
