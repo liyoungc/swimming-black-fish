@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小黑魚故事練習</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --ocean-deep: #0c2d48;
+      --ocean-mid: #145374;
+      --ocean-light: #2e8bc0;
+      --ocean-surface: #b1d4e0;
+      --fish-red: #e74c3c;
+      --fish-black: #2c3e50;
+      --success: #27ae60;
+      --warning: #f39c12;
+      --white: #ffffff;
+      --text-dark: #1a1a2e;
+    }
+
+    body {
+      font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      background: linear-gradient(180deg, var(--ocean-surface) 0%, var(--ocean-light) 30%, var(--ocean-mid) 70%, var(--ocean-deep) 100%);
+      min-height: 100vh;
+      color: var(--text-dark);
+      overflow-x: hidden;
+    }
+
+    /* Bubbles animation */
+    .bubbles {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .bubble {
+      position: absolute;
+      bottom: -100px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      animation: rise 8s infinite ease-in;
+    }
+
+    .bubble:nth-child(1) { left: 10%; width: 40px; height: 40px; animation-duration: 8s; }
+    .bubble:nth-child(2) { left: 20%; width: 20px; height: 20px; animation-duration: 5s; animation-delay: 1s; }
+    .bubble:nth-child(3) { left: 35%; width: 50px; height: 50px; animation-duration: 7s; animation-delay: 2s; }
+    .bubble:nth-child(4) { left: 50%; width: 25px; height: 25px; animation-duration: 6s; animation-delay: 0s; }
+    .bubble:nth-child(5) { left: 65%; width: 35px; height: 35px; animation-duration: 8s; animation-delay: 3s; }
+    .bubble:nth-child(6) { left: 80%; width: 45px; height: 45px; animation-duration: 6s; animation-delay: 2s; }
+    .bubble:nth-child(7) { left: 90%; width: 30px; height: 30px; animation-duration: 7s; animation-delay: 1s; }
+
+    @keyframes rise {
+      0% {
+        bottom: -100px;
+        transform: translateX(0);
+        opacity: 0.6;
+      }
+      50% {
+        opacity: 0.3;
+      }
+      100% {
+        bottom: 100vh;
+        transform: translateX(-50px);
+        opacity: 0;
+      }
+    }
+
+    /* Main container */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 30px 20px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: var(--ocean-deep);
+      margin-bottom: 10px;
+    }
+
+    h1 .fish-emoji {
+      display: inline-block;
+      animation: swim 2s ease-in-out infinite;
+    }
+
+    @keyframes swim {
+      0%, 100% { transform: translateX(0) rotate(0deg); }
+      25% { transform: translateX(5px) rotate(5deg); }
+      75% { transform: translateX(-5px) rotate(-5deg); }
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--ocean-mid);
+    }
+
+    /* Progress bar */
+    .progress-container {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: var(--ocean-deep);
+    }
+
+    .progress-bar {
+      height: 20px;
+      background: var(--ocean-surface);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--ocean-light), var(--success));
+      border-radius: 10px;
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+    }
+
+    .progress-fish {
+      font-size: 1rem;
+    }
+
+    /* Mode selector */
+    .mode-selector {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .mode-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--ocean-deep);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .mode-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .mode-btn.active {
+      background: var(--ocean-mid);
+      color: white;
+    }
+
+    .mode-btn .emoji {
+      margin-right: 8px;
+    }
+
+    /* Story card */
+    .story-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Section header */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid var(--ocean-surface);
+    }
+
+    .section-icon {
+      font-size: 2.5rem;
+      animation: bounce 1s ease infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      color: var(--ocean-deep);
+    }
+
+    .section-number {
+      background: var(--ocean-mid);
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    /* Story text */
+    .story-text {
+      font-size: 1.4rem;
+      line-height: 2.2;
+      color: var(--text-dark);
+      text-align: justify;
+    }
+
+    .story-text p {
+      margin-bottom: 15px;
+    }
+
+    /* Highlight keywords */
+    .keyword {
+      background: linear-gradient(180deg, transparent 60%, rgba(46, 139, 192, 0.3) 60%);
+      padding: 0 2px;
+      font-weight: 600;
+    }
+
+    /* Blank input */
+    .blank {
+      display: inline-block;
+      min-width: 80px;
+      padding: 5px 15px;
+      margin: 0 5px;
+      border: 2px dashed var(--ocean-mid);
+      border-radius: 8px;
+      background: rgba(46, 139, 192, 0.1);
+      font-size: 1.2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .blank:focus {
+      outline: none;
+      border-color: var(--success);
+      background: rgba(39, 174, 96, 0.1);
+    }
+
+    .blank.correct {
+      border-color: var(--success);
+      background: rgba(39, 174, 96, 0.2);
+      color: var(--success);
+    }
+
+    .blank.incorrect {
+      border-color: var(--fish-red);
+      background: rgba(231, 76, 60, 0.1);
+      animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    /* Hint button */
+    .hint-btn {
+      background: var(--warning);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-left: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .hint-btn:hover {
+      background: #e67e22;
+      transform: scale(1.05);
+    }
+
+    /* Navigation */
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .nav-btn {
+      flex: 1;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 15px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .nav-btn.prev {
+      background: var(--ocean-surface);
+      color: var(--ocean-deep);
+    }
+
+    .nav-btn.next {
+      background: var(--ocean-mid);
+      color: white;
+    }
+
+    .nav-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Recite mode */
+    .recite-prompt {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .recite-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    .recite-hint {
+      font-size: 1.2rem;
+      color: var(--ocean-mid);
+      margin-bottom: 20px;
+    }
+
+    .reveal-btn {
+      background: var(--ocean-mid);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 25px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .reveal-btn:hover {
+      background: var(--ocean-deep);
+      transform: scale(1.05);
+    }
+
+    .revealed-text {
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(46, 139, 192, 0.1);
+      border-radius: 15px;
+      text-align: left;
+    }
+
+    /* Success animation */
+    .success-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(39, 174, 96, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    .success-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .success-content {
+      text-align: center;
+      color: white;
+    }
+
+    .success-icon {
+      font-size: 6rem;
+      animation: celebrate 0.5s ease infinite;
+    }
+
+    @keyframes celebrate {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      25% { transform: scale(1.1) rotate(-5deg); }
+      75% { transform: scale(1.1) rotate(5deg); }
+    }
+
+    .success-text {
+      font-size: 2rem;
+      margin-top: 20px;
+    }
+
+    .success-subtext {
+      font-size: 1.2rem;
+      margin-top: 10px;
+      opacity: 0.9;
+    }
+
+    .continue-btn {
+      margin-top: 30px;
+      padding: 15px 40px;
+      background: white;
+      color: var(--success);
+      border: none;
+      border-radius: 25px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .continue-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* Hidden class */
+    .hidden {
+      display: none !important;
+    }
+
+    /* Tips section */
+    .tips-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      padding: 20px 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .tips-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      font-weight: 600;
+      color: var(--ocean-deep);
+    }
+
+    .tips-list {
+      list-style: none;
+    }
+
+    .tips-list li {
+      padding: 8px 0;
+      padding-left: 25px;
+      position: relative;
+      color: var(--ocean-mid);
+    }
+
+    .tips-list li::before {
+      content: "🐟";
+      position: absolute;
+      left: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .story-text {
+        font-size: 1.2rem;
+      }
+
+      .mode-btn {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+      }
+
+      .section-icon {
+        font-size: 2rem;
+      }
+    }
+
+    /* All sections display */
+    .all-sections {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .mini-section {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .mini-section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      font-weight: 600;
+      color: var(--ocean-deep);
+    }
+
+    /* Check answers button */
+    .check-btn {
+      display: block;
+      width: 100%;
+      max-width: 300px;
+      margin: 30px auto;
+      padding: 15px 30px;
+      background: var(--success);
+      color: white;
+      border: none;
+      border-radius: 25px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .check-btn:hover {
+      background: #219a52;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(39, 174, 96, 0.4);
+    }
+
+    /* Score display */
+    .score-display {
+      text-align: center;
+      padding: 20px;
+      background: rgba(39, 174, 96, 0.1);
+      border-radius: 15px;
+      margin-top: 20px;
+    }
+
+    .score-number {
+      font-size: 3rem;
+      font-weight: bold;
+      color: var(--success);
+    }
+
+    .score-label {
+      color: var(--ocean-mid);
+      font-size: 1.1rem;
+    }
+
+    /* Reset button */
+    .reset-btn {
+      background: var(--fish-red);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .reset-btn:hover {
+      background: #c0392b;
+    }
+  </style>
+</head>
+<body>
+  <!-- Bubbles background -->
+  <div class="bubbles">
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+  </div>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <h1><span class="fish-emoji">🐟</span> 小黑魚故事練習 <span class="fish-emoji">🐠</span></h1>
+      <p class="subtitle">一起來練習說故事吧！</p>
+    </header>
+
+    <!-- Progress -->
+    <div class="progress-container">
+      <div class="progress-label">
+        <span>練習進度</span>
+        <span id="progress-text">第 1 段 / 共 6 段</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width: 16.67%">
+          <span class="progress-fish">🐟</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode selector -->
+    <div class="mode-selector">
+      <button class="mode-btn active" data-mode="read" onclick="setMode('read')">
+        <span class="emoji">📖</span>閱讀故事
+      </button>
+      <button class="mode-btn" data-mode="practice" onclick="setMode('practice')">
+        <span class="emoji">✏️</span>分段練習
+      </button>
+      <button class="mode-btn" data-mode="fill" onclick="setMode('fill')">
+        <span class="emoji">🧩</span>填空挑戰
+      </button>
+      <button class="mode-btn" data-mode="recite" onclick="setMode('recite')">
+        <span class="emoji">🎤</span>自由背誦
+      </button>
+    </div>
+
+    <!-- Tips -->
+    <div class="tips-card" id="tips-card">
+      <div class="tips-header">
+        <span>💡</span>
+        <span>記憶小技巧</span>
+      </div>
+      <ul class="tips-list">
+        <li>先看圖示，想像故事畫面</li>
+        <li>大聲唸出來，用耳朵幫忙記</li>
+        <li>每天練習一點點，不要一次背太多</li>
+        <li>試著用自己的話說說看</li>
+      </ul>
+    </div>
+
+    <!-- Story content area -->
+    <div id="content-area">
+      <!-- Content will be dynamically inserted here -->
+    </div>
+  </div>
+
+  <!-- Success overlay -->
+  <div class="success-overlay" id="success-overlay">
+    <div class="success-content">
+      <div class="success-icon">🎉</div>
+      <div class="success-text">太棒了！</div>
+      <div class="success-subtext" id="success-message">你完成了這一段！</div>
+      <button class="continue-btn" onclick="closeSuccess()">繼續練習</button>
+    </div>
+  </div>
+
+  <script>
+    // Story data - divided into 6 sections
+    const storyData = [
+      {
+        id: 1,
+        icon: "🐟",
+        title: "快樂的小魚家族",
+        text: "有一群快樂的小魚住在大海的小角落裡，牠們都是紅色的，其中有一條小魚像淡菜殼那麼黑。牠游得比所有兄弟姐妹都快，名字叫小黑魚。",
+        keywords: ["快樂的小魚", "大海的小角落", "紅色", "淡菜殼那麼黑", "游得比所有兄弟姐妹都快", "小黑魚"],
+        blanks: ["紅色", "淡菜殼", "小黑魚"]
+      },
+      {
+        id: 2,
+        icon: "🦈",
+        title: "可怕的鮪魚來了",
+        text: "在一個倒霉的日子裡，波浪中衝出一條又快又兇的鮪魚，牠一口就把所有的小紅魚都吞到肚子裡，只有小黑魚逃掉了。小黑魚躲在黑乎乎的深水裡，牠感到又害怕、又寂寞、又難過。",
+        keywords: ["倒霉的日子", "又快又兇的鮪魚", "一口就把所有的小紅魚都吞到肚子裡", "只有小黑魚逃掉了", "又害怕、又寂寞、又難過"],
+        blanks: ["鮪魚", "小黑魚逃掉了", "又害怕、又寂寞、又難過"]
+      },
+      {
+        id: 3,
+        icon: "🌈",
+        title: "大海裡的奇妙生物",
+        text: "可是，大海裡充滿了奇妙的生物。小黑魚游呀游，碰見了各種稀奇古怪的事，所以牠又高興了起來。牠看見了像彩虹果凍似的水母、走起路來像怪手似的大龍蝦、像是被看不見的繩子牽著的怪魚、像糖果一樣漂亮的岩石上，長著森林似的海草、長得幾乎不知道自己尾巴在哪裡的鰻魚、還有海葵，就像粉紅色的棕櫚樹在風中搖曳。",
+        keywords: ["奇妙的生物", "稀奇古怪", "彩虹果凍似的水母", "怪手似的大龍蝦", "被看不見的繩子牽著的怪魚", "森林似的海草", "鰻魚", "粉紅色的棕櫚樹"],
+        blanks: ["水母", "大龍蝦", "海草", "鰻魚", "海葵"]
+      },
+      {
+        id: 4,
+        icon: "🙈",
+        title: "遇見躲起來的小紅魚",
+        text: "後來，牠看到一群跟牠一樣的小魚，躲在岩石和苔草的黑影子裡。\n「來，我們一塊兒游出去，到處玩玩、到處看看！」小黑魚高興地說。\n「不行，」小紅魚說，「大魚會把我們通通吃掉。」\n「可是我們不能老待在這兒，」小黑魚說，「我們一定得想個辦法。」",
+        keywords: ["岩石和苔草的黑影子", "一塊兒游出去", "到處玩玩、到處看看", "大魚會把我們通通吃掉", "不能老待在這兒", "一定得想個辦法"],
+        blanks: ["岩石", "苔草", "想個辦法"]
+      },
+      {
+        id: 5,
+        icon: "💡",
+        title: "小黑魚的好主意",
+        text: "小黑魚想了又想，想了又想。突然，牠說：「有了！我們可以游在一塊兒，變成海裡最大的魚。」",
+        keywords: ["想了又想", "游在一塊兒", "變成海裡最大的魚"],
+        blanks: ["想了又想", "游在一塊兒", "海裡最大的魚"]
+      },
+      {
+        id: 6,
+        icon: "👁️",
+        title: "一起變成大魚",
+        text: "牠教牠們各就各位，緊緊地聚在一起。等到大家都排定，看起來就像一條大魚時，小黑魚說：「我來當眼睛。」\n於是，牠們在清涼的早晨游，也在充滿陽光的中午游，最後把大魚都趕走了。",
+        keywords: ["各就各位", "緊緊地聚在一起", "我來當眼睛", "清涼的早晨", "充滿陽光的中午", "把大魚都趕走了"],
+        blanks: ["各就各位", "眼睛", "趕走了"]
+      }
+    ];
+
+    let currentMode = 'read';
+    let currentSection = 0;
+    let revealedSections = {};
+    let fillAnswers = {};
+
+    // Initialize
+    function init() {
+      setMode('read');
+      loadProgress();
+    }
+
+    // Set mode
+    function setMode(mode) {
+      currentMode = mode;
+      
+      // Update button states
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+
+      // Show/hide tips
+      document.getElementById('tips-card').classList.toggle('hidden', mode !== 'read');
+
+      // Render content
+      renderContent();
+    }
+
+    // Render content based on mode
+    function renderContent() {
+      const contentArea = document.getElementById('content-area');
+      
+      switch(currentMode) {
+        case 'read':
+          renderReadMode(contentArea);
+          break;
+        case 'practice':
+          renderPracticeMode(contentArea);
+          break;
+        case 'fill':
+          renderFillMode(contentArea);
+          break;
+        case 'recite':
+          renderReciteMode(contentArea);
+          break;
+      }
+
+      updateProgress();
+    }
+
+    // Read mode - show all sections
+    function renderReadMode(container) {
+      let html = '<div class="all-sections">';
+      
+      storyData.forEach((section, index) => {
+        html += `
+          <div class="mini-section">
+            <div class="mini-section-header">
+              <span class="section-number">${section.id}</span>
+              <span>${section.icon}</span>
+              <span>${section.title}</span>
+            </div>
+            <div class="story-text">
+              <p>${highlightKeywords(section.text, section.keywords)}</p>
+            </div>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // Practice mode - section by section
+    function renderPracticeMode(container) {
+      const section = storyData[currentSection];
+      
+      container.innerHTML = `
+        <div class="story-card">
+          <div class="section-header">
+            <span class="section-number">${section.id}</span>
+            <span class="section-icon">${section.icon}</span>
+            <div>
+              <div class="section-title">${section.title}</div>
+            </div>
+          </div>
+          <div class="story-text">
+            <p>${highlightKeywords(section.text, section.keywords)}</p>
+          </div>
+          <div class="nav-buttons">
+            <button class="nav-btn prev" onclick="prevSection()" ${currentSection === 0 ? 'disabled' : ''}>
+              ⬅️ 上一段
+            </button>
+            <button class="nav-btn next" onclick="nextSection()">
+              ${currentSection === storyData.length - 1 ? '🎉 完成！' : '下一段 ➡️'}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Fill mode - blanks to fill
+    function renderFillMode(container) {
+      let html = '<div class="story-card"><div class="all-sections">';
+      
+      storyData.forEach((section, sIndex) => {
+        html += `
+          <div class="mini-section">
+            <div class="mini-section-header">
+              <span class="section-number">${section.id}</span>
+              <span>${section.icon}</span>
+              <span>${section.title}</span>
+            </div>
+            <div class="story-text">
+              <p>${createBlanks(section.text, section.blanks, sIndex)}</p>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `
+        </div>
+        <button class="check-btn" onclick="checkAllAnswers()">🔍 檢查答案</button>
+        <div id="score-area"></div>
+      </div>`;
+      
+      container.innerHTML = html;
+    }
+
+    // Recite mode - only prompts, reveal on click
+    function renderReciteMode(container) {
+      const section = storyData[currentSection];
+      const isRevealed = revealedSections[currentSection];
+
+      container.innerHTML = `
+        <div class="story-card">
+          <div class="section-header">
+            <span class="section-number">${section.id}</span>
+            <span class="section-icon">${section.icon}</span>
+            <div>
+              <div class="section-title">${section.title}</div>
+            </div>
+          </div>
+          <div class="recite-prompt">
+            <div class="recite-icon">${section.icon}</div>
+            <div class="recite-hint">試著說出這一段的內容...</div>
+            <div class="recite-hint" style="font-size: 1rem; color: #888;">提示：${section.keywords.slice(0, 3).join('、')}</div>
+            <button class="reveal-btn" onclick="toggleReveal(${currentSection})">
+              ${isRevealed ? '🙈 隱藏答案' : '👀 看答案'}
+            </button>
+            ${isRevealed ? `
+              <div class="revealed-text">
+                <div class="story-text">
+                  <p>${section.text}</p>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+          <div class="nav-buttons">
+            <button class="nav-btn prev" onclick="prevSection()" ${currentSection === 0 ? 'disabled' : ''}>
+              ⬅️ 上一段
+            </button>
+            <button class="nav-btn next" onclick="nextSection()">
+              ${currentSection === storyData.length - 1 ? '🎉 完成！' : '下一段 ➡️'}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Highlight keywords
+    function highlightKeywords(text, keywords) {
+      let result = text;
+      keywords.forEach(keyword => {
+        const regex = new RegExp(escapeRegex(keyword), 'g');
+        result = result.replace(regex, `<span class="keyword">${keyword}</span>`);
+      });
+      // Convert newlines to <br>
+      result = result.replace(/\n/g, '<br>');
+      return result;
+    }
+
+    // Escape regex special characters
+    function escapeRegex(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // Create blanks in text
+    function createBlanks(text, blanks, sectionIndex) {
+      let result = text;
+      blanks.forEach((blank, bIndex) => {
+        const key = `${sectionIndex}-${bIndex}`;
+        const savedValue = fillAnswers[key] || '';
+        const regex = new RegExp(escapeRegex(blank), 'g');
+        let replaced = false;
+        result = result.replace(regex, (match) => {
+          if (!replaced) {
+            replaced = true;
+            return `<input type="text" class="blank" data-answer="${blank}" data-key="${key}" value="${savedValue}" onchange="saveFillAnswer('${key}', this.value)" placeholder="___">`;
+          }
+          return match;
+        });
+      });
+      result = result.replace(/\n/g, '<br>');
+      return result;
+    }
+
+    // Save fill answer
+    function saveFillAnswer(key, value) {
+      fillAnswers[key] = value;
+    }
+
+    // Check all fill answers
+    function checkAllAnswers() {
+      const blanks = document.querySelectorAll('.blank');
+      let correct = 0;
+      let total = blanks.length;
+
+      blanks.forEach(blank => {
+        const answer = blank.dataset.answer;
+        const value = blank.value.trim();
+        
+        if (value === answer) {
+          blank.classList.remove('incorrect');
+          blank.classList.add('correct');
+          correct++;
+        } else {
+          blank.classList.remove('correct');
+          blank.classList.add('incorrect');
+        }
+      });
+
+      const percentage = Math.round((correct / total) * 100);
+      
+      document.getElementById('score-area').innerHTML = `
+        <div class="score-display">
+          <div class="score-number">${correct}/${total}</div>
+          <div class="score-label">答對 ${percentage}%！${percentage === 100 ? '太厲害了！🎉' : percentage >= 70 ? '很棒！繼續加油！💪' : '再練習一下！🌟'}</div>
+          <button class="reset-btn" onclick="resetFill()">🔄 重新填寫</button>
+        </div>
+      `;
+
+      if (percentage === 100) {
+        showSuccess('你答對所有題目了！');
+      }
+    }
+
+    // Reset fill answers
+    function resetFill() {
+      fillAnswers = {};
+      document.querySelectorAll('.blank').forEach(blank => {
+        blank.value = '';
+        blank.classList.remove('correct', 'incorrect');
+      });
+      document.getElementById('score-area').innerHTML = '';
+    }
+
+    // Toggle reveal
+    function toggleReveal(sectionIndex) {
+      revealedSections[sectionIndex] = !revealedSections[sectionIndex];
+      renderContent();
+    }
+
+    // Navigation
+    function prevSection() {
+      if (currentSection > 0) {
+        currentSection--;
+        renderContent();
+      }
+    }
+
+    function nextSection() {
+      if (currentSection < storyData.length - 1) {
+        currentSection++;
+        renderContent();
+      } else {
+        showSuccess('你練習完整個故事了！');
+      }
+    }
+
+    // Update progress
+    function updateProgress() {
+      const progress = ((currentSection + 1) / storyData.length) * 100;
+      document.getElementById('progress-fill').style.width = progress + '%';
+      document.getElementById('progress-text').textContent = `第 ${currentSection + 1} 段 / 共 ${storyData.length} 段`;
+      saveProgress();
+    }
+
+    // Show success
+    function showSuccess(message) {
+      document.getElementById('success-message').textContent = message;
+      document.getElementById('success-overlay').classList.add('show');
+    }
+
+    // Close success
+    function closeSuccess() {
+      document.getElementById('success-overlay').classList.remove('show');
+    }
+
+    // Save progress to localStorage
+    function saveProgress() {
+      localStorage.setItem('swimmy-progress', JSON.stringify({
+        currentSection,
+        revealedSections,
+        fillAnswers
+      }));
+    }
+
+    // Load progress from localStorage
+    function loadProgress() {
+      const saved = localStorage.getItem('swimmy-progress');
+      if (saved) {
+        const data = JSON.parse(saved);
+        currentSection = data.currentSection || 0;
+        revealedSections = data.revealedSections || {};
+        fillAnswers = data.fillAnswers || {};
+      }
+    }
+
+    // Initialize on load
+    init();
+  </script>
+</body>
+</html>
