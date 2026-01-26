@@ -392,75 +392,6 @@
       text-align: left;
     }
 
-    .speech-area {
-      margin-top: 20px;
-      padding: 20px;
-      border-radius: 15px;
-      transition: background-color 0.5s ease;
-    }
-
-    .speech-area.listening {
-      background: rgba(46, 139, 192, 0.1);
-    }
-
-    .speech-area.good {
-      background: rgba(39, 174, 96, 0.2);
-    }
-
-    .speech-area.poor {
-      background: rgba(231, 76, 60, 0.2);
-    }
-
-    .speech-btn {
-      background: linear-gradient(135deg, #e74c3c, #c0392b);
-      color: white;
-      border: none;
-      padding: 20px 40px;
-      border-radius: 50px;
-      font-size: 1.2rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .speech-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 5px 20px rgba(231, 76, 60, 0.4);
-    }
-
-    .speech-btn.recording {
-      background: linear-gradient(135deg, #27ae60, #219a52);
-      animation: pulse 1.5s ease infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.4); }
-      50% { box-shadow: 0 0 0 15px rgba(39, 174, 96, 0); }
-    }
-
-    .speech-result {
-      margin-top: 20px;
-      padding: 15px;
-      background: rgba(255, 255, 255, 0.8);
-      border-radius: 10px;
-      text-align: left;
-    }
-
-    .speech-result-label {
-      font-size: 0.9rem;
-      color: var(--ocean-mid);
-      margin-bottom: 8px;
-    }
-
-    .speech-result-text {
-      font-size: 1.1rem;
-      color: var(--text-dark);
-      line-height: 1.8;
-    }
-
     .similarity-score {
       margin-top: 15px;
       padding: 10px 20px;
@@ -487,14 +418,6 @@
     .similarity-score.poor {
       background: rgba(231, 76, 60, 0.2);
       color: #e74c3c;
-    }
-
-    .speech-not-supported {
-      color: var(--fish-red);
-      padding: 15px;
-      background: rgba(231, 76, 60, 0.1);
-      border-radius: 10px;
-      margin-top: 15px;
     }
 
     /* 文字輸入框區域 */
@@ -558,25 +481,6 @@
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
-    }
-
-    .input-method-divider {
-      display: flex;
-      align-items: center;
-      margin: 25px 0;
-      color: #888;
-    }
-
-    .input-method-divider::before,
-    .input-method-divider::after {
-      content: '';
-      flex: 1;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .input-method-divider span {
-      padding: 0 15px;
-      font-size: 0.9rem;
     }
 
     #text-result-container {
@@ -1032,9 +936,6 @@
       // Show/hide tips
       document.getElementById('tips-card').classList.toggle('hidden', mode !== 'read');
 
-      // Stop recording when switching modes
-      stopRecording();
-
       // Generate new blanks when entering fill mode
       if (mode === 'fill') {
         generateRandomBlanks();
@@ -1240,153 +1141,8 @@
       }
     }
 
-    // Recite mode - with speech recognition
-    let recognition = null;
-    let isRecording = false;
+    // Recite mode
     let reciteMode = 'cued';
-    let lastSoundPlayed = 0;
-    
-    function initSpeechRecognition() {
-      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'zh-TW';
-        recognition.maxAlternatives = 1;
-        
-        recognition.onresult = (event) => {
-          let transcript = '';
-          for (let i = 0; i < event.results.length; i++) {
-            transcript += event.results[i][0].transcript;
-          }
-          updateSpeechResult(transcript);
-        };
-        
-        recognition.onerror = (event) => {
-          console.log('Speech recognition error:', event.error);
-          if (event.error === 'no-speech' || event.error === 'audio-capture') {
-            if (isRecording) {
-              setTimeout(() => {
-                if (isRecording) {
-                  try {
-                    recognition.start();
-                  } catch(e) {}
-                }
-              }, 100);
-            }
-          } else if (event.error !== 'aborted') {
-            stopRecording();
-          }
-        };
-        
-        recognition.onend = () => {
-          if (isRecording) {
-            setTimeout(() => {
-              if (isRecording) {
-                try {
-                  recognition.start();
-                } catch(e) {}
-              }
-            }, 100);
-          }
-        };
-        
-        return true;
-      }
-      return false;
-    }
-    
-    function toggleRecording() {
-      if (isRecording) {
-        stopRecording();
-      } else {
-        startRecording();
-      }
-    }
-    
-    function startRecording() {
-      if (!recognition) {
-        if (!initSpeechRecognition()) {
-          alert('你的瀏覽器不支援語音辨識');
-          return;
-        }
-      }
-      
-      if (audioContext.state === 'suspended') {
-        audioContext.resume();
-      }
-      
-      isRecording = true;
-      lastSoundPlayed = 0;
-      
-      try {
-        recognition.start();
-      } catch(e) {
-        recognition.stop();
-        setTimeout(() => {
-          if (isRecording) {
-            try { recognition.start(); } catch(e) {}
-          }
-        }, 200);
-      }
-      
-      const btn = document.getElementById('speech-btn');
-      if (btn) {
-        btn.classList.add('recording');
-        btn.innerHTML = '🎙️ 錄音中... 點擊停止';
-      }
-      
-      const speechArea = document.getElementById('speech-area');
-      if (speechArea) {
-        speechArea.classList.add('listening');
-        speechArea.classList.remove('good', 'poor');
-      }
-      
-      const resultContainer = document.getElementById('speech-result-container');
-      if (resultContainer) {
-        resultContainer.innerHTML = `
-          <div class="speech-result">
-            <div class="speech-result-label">你說的內容：</div>
-            <div class="speech-result-text" id="speech-text" style="color: #888;">正在聽... 請開始說話</div>
-          </div>
-        `;
-      }
-    }
-    
-    function stopRecording() {
-      isRecording = false;
-      if (recognition) {
-        try {
-          recognition.stop();
-        } catch(e) {}
-      }
-      
-      const btn = document.getElementById('speech-btn');
-      if (btn) {
-        btn.classList.remove('recording');
-        btn.innerHTML = '🎤 開始說故事';
-      }
-      
-      const speechArea = document.getElementById('speech-area');
-      if (speechArea) {
-        speechArea.classList.remove('listening');
-      }
-    }
-    
-    function updateSpeechResult(transcript) {
-      const speechText = document.getElementById('speech-text');
-      if (speechText) {
-        speechText.textContent = transcript || '正在聽... 請開始說話';
-        speechText.style.color = transcript ? 'var(--text-dark)' : '#888';
-      }
-
-      if (transcript && transcript.length > 3) {
-        const section = storyData[currentSection];
-        const similarity = calculateSimilarity(transcript, section.text);
-        showSimilarityFeedback(similarity, transcript.length);
-      }
-    }
 
     // 文字輸入相關函數
     function onTextInputChange() {
@@ -1475,77 +1231,14 @@
       return Math.min(100, Math.round(baseSimilarity * 0.7 + keywordBonus + 10));
     }
     
-    function showSimilarityFeedback(similarity, spokenLength) {
-      const speechArea = document.getElementById('speech-area');
-      const resultContainer = document.getElementById('speech-result-container');
-      
-      let level, message, className;
-      const now = Date.now();
-      
-      if (similarity >= 60) {
-        level = '太棒了！';
-        message = '你記得很清楚！';
-        className = 'excellent';
-        if (speechArea) {
-          speechArea.classList.remove('poor', 'listening');
-          speechArea.classList.add('good');
-        }
-        if (now - lastSoundPlayed > 3000 && spokenLength > 15) {
-          playSound('correct');
-          lastSoundPlayed = now;
-        }
-      } else if (similarity >= 45) {
-        level = '不錯喔！';
-        message = '繼續加油！';
-        className = 'good';
-        if (speechArea) {
-          speechArea.classList.remove('poor', 'listening');
-          speechArea.classList.add('good');
-        }
-      } else if (similarity >= 30) {
-        level = '加油！';
-        message = '再多練習幾次';
-        className = 'fair';
-        if (speechArea) {
-          speechArea.classList.remove('good', 'poor', 'listening');
-        }
-      } else {
-        level = '再試一次';
-        message = '可以看提示或答案';
-        className = 'poor';
-        if (speechArea) {
-          speechArea.classList.remove('good', 'listening');
-          speechArea.classList.add('poor');
-        }
-      }
-      
-      const scoreHtml = `
-        <div class="similarity-score ${className}">
-          <span style="font-size: 1.5rem; font-weight: bold;">${similarity}%</span>
-          <span style="margin-left: 10px;">${level} ${message}</span>
-        </div>
-      `;
-      
-      const existingResult = resultContainer.querySelector('.speech-result');
-      const existingScore = resultContainer.querySelector('.similarity-score');
-      
-      if (existingScore) {
-        existingScore.outerHTML = scoreHtml;
-      } else if (existingResult) {
-        existingResult.insertAdjacentHTML('afterend', scoreHtml);
-      }
-    }
-    
     function setReciteMode(mode) {
       reciteMode = mode;
-      stopRecording();
       renderContent();
     }
-    
+
     function renderReciteMode(container) {
       const section = storyData[currentSection];
       const isRevealed = revealedSections[currentSection];
-      const speechSupported = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
 
       container.innerHTML = `
         <div class="story-card">
@@ -1595,25 +1288,6 @@
                 ✅ 檢查答案
               </button>
               <div id="text-result-container"></div>
-            </div>
-
-            <!-- 分隔線 -->
-            <div class="input-method-divider">
-              <span>或使用語音辨識</span>
-            </div>
-
-            <!-- 語音辨識區域 -->
-            <div class="speech-area" id="speech-area">
-              ${speechSupported ? `
-                <button class="speech-btn" id="speech-btn" onclick="toggleRecording()">
-                  🎤 按住說故事
-                </button>
-                <div id="speech-result-container"></div>
-              ` : `
-                <div class="speech-not-supported">
-                  你的瀏覽器不支援語音辨識，請使用 Chrome 瀏覽器
-                </div>
-              `}
             </div>
             
             <div style="margin-top: 20px;">
@@ -1779,7 +1453,6 @@
     function prevSection() {
       if (currentSection > 0) {
         currentSection--;
-        stopRecording();
         playSound('click');
         renderContent();
       }
@@ -1788,11 +1461,9 @@
     function nextSection() {
       if (currentSection < storyData.length - 1) {
         currentSection++;
-        stopRecording();
         playSound('click');
         renderContent();
       } else {
-        stopRecording();
         playSound('success');
         showSuccess('你練習完整個故事了！');
       }
