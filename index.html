@@ -795,7 +795,8 @@
         title: "快樂的小魚家族",
         text: "有一群快樂的小魚住在大海的小角落裡，牠們都是紅色的，其中有一條小魚像淡菜殼那麼黑。牠游得比所有兄弟姐妹都快，名字叫小黑魚。",
         keywords: ["快樂的小魚", "大海的小角落", "紅色", "淡菜殼那麼黑", "游得比所有兄弟姐妹都快", "小黑魚"],
-        blanks: ["紅色", "淡菜殼", "小黑魚"]
+        blankPool: ["快樂的小魚", "大海", "小角落", "紅色", "淡菜殼", "兄弟姐妹", "小黑魚"],
+        blankCount: 3
       },
       {
         id: 2,
@@ -803,7 +804,8 @@
         title: "可怕的鮪魚來了",
         text: "在一個倒霉的日子裡，波浪中衝出一條又快又兇的鮪魚，牠一口就把所有的小紅魚都吞到肚子裡，只有小黑魚逃掉了。小黑魚躲在黑乎乎的深水裡，牠感到又害怕、又寂寞、又難過。",
         keywords: ["倒霉的日子", "又快又兇的鮪魚", "一口就把所有的小紅魚都吞到肚子裡", "只有小黑魚逃掉了", "又害怕、又寂寞、又難過"],
-        blanks: ["鮪魚", "小黑魚逃掉了", "又害怕、又寂寞、又難過"]
+        blankPool: ["倒霉", "波浪", "鮪魚", "小紅魚", "肚子", "小黑魚逃掉了", "深水", "害怕", "寂寞", "難過"],
+        blankCount: 4
       },
       {
         id: 3,
@@ -811,7 +813,8 @@
         title: "大海裡的奇妙生物",
         text: "可是，大海裡充滿了奇妙的生物。小黑魚游呀游，碰見了各種稀奇古怪的事，所以牠又高興了起來。牠看見了像彩虹果凍似的水母、走起路來像怪手似的大龍蝦、像是被看不見的繩子牽著的怪魚、像糖果一樣漂亮的岩石上，長著森林似的海草、長得幾乎不知道自己尾巴在哪裡的鰻魚、還有海葵，就像粉紅色的棕櫚樹在風中搖曳。",
         keywords: ["奇妙的生物", "稀奇古怪", "彩虹果凍似的水母", "怪手似的大龍蝦", "被看不見的繩子牽著的怪魚", "森林似的海草", "鰻魚", "粉紅色的棕櫚樹"],
-        blanks: ["水母", "大龍蝦", "海草", "鰻魚", "海葵"]
+        blankPool: ["奇妙", "稀奇古怪", "高興", "彩虹果凍", "水母", "怪手", "大龍蝦", "繩子", "怪魚", "糖果", "森林", "海草", "尾巴", "鰻魚", "海葵", "棕櫚樹"],
+        blankCount: 5
       },
       {
         id: 4,
@@ -819,7 +822,8 @@
         title: "遇見躲起來的小紅魚",
         text: "後來，牠看到一群跟牠一樣的小魚，躲在岩石和苔草的黑影子裡。\n「來，我們一塊兒游出去，到處玩玩、到處看看！」小黑魚高興地說。\n「不行，」小紅魚說，「大魚會把我們通通吃掉。」\n「可是我們不能老待在這兒，」小黑魚說，「我們一定得想個辦法。」",
         keywords: ["岩石和苔草的黑影子", "一塊兒游出去", "到處玩玩、到處看看", "大魚會把我們通通吃掉", "不能老待在這兒", "一定得想個辦法"],
-        blanks: ["岩石", "苔草", "想個辦法"]
+        blankPool: ["岩石", "苔草", "黑影子", "一塊兒", "到處玩玩", "到處看看", "大魚", "通通吃掉", "老待在這兒", "想個辦法"],
+        blankCount: 4
       },
       {
         id: 5,
@@ -827,7 +831,8 @@
         title: "小黑魚的好主意",
         text: "小黑魚想了又想，想了又想。突然，牠說：「有了！我們可以游在一塊兒，變成海裡最大的魚。」",
         keywords: ["想了又想", "游在一塊兒", "變成海裡最大的魚"],
-        blanks: ["想了又想", "游在一塊兒", "海裡最大的魚"]
+        blankPool: ["想了又想", "突然", "游在一塊兒", "海裡最大的魚"],
+        blankCount: 3
       },
       {
         id: 6,
@@ -835,9 +840,12 @@
         title: "一起變成大魚",
         text: "牠教牠們各就各位，緊緊地聚在一起。等到大家都排定，看起來就像一條大魚時，小黑魚說：「我來當眼睛。」\n於是，牠們在清涼的早晨游，也在充滿陽光的中午游，最後把大魚都趕走了。",
         keywords: ["各就各位", "緊緊地聚在一起", "我來當眼睛", "清涼的早晨", "充滿陽光的中午", "把大魚都趕走了"],
-        blanks: ["各就各位", "眼睛", "趕走了"]
+        blankPool: ["各就各位", "緊緊地", "聚在一起", "排定", "大魚", "眼睛", "清涼", "早晨", "陽光", "中午", "趕走了"],
+        blankCount: 4
       }
     ];
+    
+    let currentBlanks = {};
 
     let currentMode = 'read';
     let currentSection = 0;
@@ -910,8 +918,33 @@
       // Show/hide tips
       document.getElementById('tips-card').classList.toggle('hidden', mode !== 'read');
 
+      // Generate new blanks when entering fill mode
+      if (mode === 'fill') {
+        generateRandomBlanks();
+      }
+
       // Render content
       renderContent();
+    }
+    
+    function generateRandomBlanks() {
+      currentBlanks = {};
+      storyData.forEach((section, sIndex) => {
+        const pool = [...section.blankPool];
+        const selected = [];
+        const count = Math.min(section.blankCount, pool.length);
+        
+        for (let i = 0; i < count; i++) {
+          const randomIndex = Math.floor(Math.random() * pool.length);
+          selected.push(pool[randomIndex]);
+          pool.splice(randomIndex, 1);
+        }
+        
+        currentBlanks[sIndex] = selected;
+      });
+      
+      fillAnswers = {};
+      fillSectionIndex = 0;
     }
 
     // Render content based on mode
@@ -1002,7 +1035,7 @@
             </div>
           </div>
           <div class="story-text">
-            <p>${createBlanks(section.text, section.blanks, fillSectionIndex)}</p>
+            <p>${createBlanks(section.text, fillSectionIndex)}</p>
           </div>
           <div id="section-score"></div>
           <div class="nav-buttons">
@@ -1013,6 +1046,9 @@
               ${fillSectionIndex === storyData.length - 1 ? '🎉 完成！' : '下一段 ➡️'}
             </button>
           </div>
+          <div style="text-align: center; margin-top: 15px;">
+            <button class="reset-btn" onclick="regenerateCurrentSection()">🔄 換一批題目</button>
+          </div>
         </div>
       `;
       
@@ -1021,9 +1057,32 @@
       });
     }
     
+    function regenerateCurrentSection() {
+      const section = storyData[fillSectionIndex];
+      const pool = [...section.blankPool];
+      const selected = [];
+      const count = Math.min(section.blankCount, pool.length);
+      
+      for (let i = 0; i < count; i++) {
+        const randomIndex = Math.floor(Math.random() * pool.length);
+        selected.push(pool[randomIndex]);
+        pool.splice(randomIndex, 1);
+      }
+      
+      currentBlanks[fillSectionIndex] = selected;
+      
+      const blanksCount = selected.length;
+      for (let i = 0; i < blanksCount; i++) {
+        delete fillAnswers[`${fillSectionIndex}-${i}`];
+      }
+      
+      playSound('click');
+      renderContent();
+    }
+    
     function checkSectionComplete(sectionIndex) {
-      const section = storyData[sectionIndex];
-      return section.blanks.every((blank, bIndex) => {
+      const blanks = currentBlanks[sectionIndex] || [];
+      return blanks.every((blank, bIndex) => {
         const key = `${sectionIndex}-${bIndex}`;
         return fillAnswers[key] === blank;
       });
@@ -1326,7 +1385,8 @@
     }
 
     // Create blanks in text
-    function createBlanks(text, blanks, sectionIndex) {
+    function createBlanks(text, sectionIndex) {
+      const blanks = currentBlanks[sectionIndex] || [];
       let result = text;
       blanks.forEach((blank, bIndex) => {
         const key = `${sectionIndex}-${bIndex}`;
@@ -1364,8 +1424,8 @@
         input.classList.add('correct');
         playSound('correct');
         
-        const section = storyData[fillSectionIndex];
-        const allCorrect = section.blanks.every((blank, bIndex) => {
+        const blanks = currentBlanks[fillSectionIndex] || [];
+        const allCorrect = blanks.every((blank, bIndex) => {
           const k = `${fillSectionIndex}-${bIndex}`;
           return fillAnswers[k] === blank;
         });
