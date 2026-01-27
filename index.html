@@ -400,24 +400,81 @@
       font-weight: 600;
     }
 
-    .similarity-score.excellent {
-      background: rgba(39, 174, 96, 0.2);
+    /* 五級制相似度反饋樣式 */
+    .similarity-feedback {
+      text-align: center;
+      padding: 20px;
+      border-radius: 16px;
+      animation: feedbackPop 0.4s ease-out;
+    }
+
+    @keyframes feedbackPop {
+      0% { transform: scale(0.8); opacity: 0; }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .feedback-icon {
+      font-size: 3rem;
+      margin-bottom: 8px;
+      animation: bounce 0.6s ease-in-out;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .feedback-stars {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+      letter-spacing: 4px;
+    }
+
+    .feedback-title {
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .feedback-message {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    /* 等級 5：超棒 */
+    .similarity-feedback.level-5 {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 165, 0, 0.3));
+      color: #d4a000;
+      border: 2px solid rgba(255, 215, 0, 0.5);
+    }
+
+    /* 等級 4：不錯 */
+    .similarity-feedback.level-4 {
+      background: linear-gradient(135deg, rgba(39, 174, 96, 0.2), rgba(46, 204, 113, 0.2));
       color: #27ae60;
+      border: 2px solid rgba(39, 174, 96, 0.4);
     }
 
-    .similarity-score.good {
-      background: rgba(46, 139, 192, 0.2);
-      color: #2e8bc0;
+    /* 等級 3：可以 */
+    .similarity-feedback.level-3 {
+      background: linear-gradient(135deg, rgba(52, 152, 219, 0.2), rgba(41, 128, 185, 0.2));
+      color: #2980b9;
+      border: 2px solid rgba(52, 152, 219, 0.4);
     }
 
-    .similarity-score.fair {
-      background: rgba(243, 156, 18, 0.2);
-      color: #f39c12;
+    /* 等級 2：還需要加油 */
+    .similarity-feedback.level-2 {
+      background: linear-gradient(135deg, rgba(243, 156, 18, 0.2), rgba(230, 126, 34, 0.2));
+      color: #e67e22;
+      border: 2px solid rgba(243, 156, 18, 0.4);
     }
 
-    .similarity-score.poor {
-      background: rgba(231, 76, 60, 0.2);
-      color: #e74c3c;
+    /* 等級 1：練習練習再來 */
+    .similarity-feedback.level-1 {
+      background: linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(142, 68, 173, 0.2));
+      color: #8e44ad;
+      border: 2px solid rgba(155, 89, 182, 0.4);
     }
 
     /* 文字輸入框區域 */
@@ -878,7 +935,7 @@
       const gainNode = audioContext.createGain();
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       if (type === 'correct') {
         oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
         oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1);
@@ -915,6 +972,52 @@
         gainNode.gain.linearRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + 0.05);
+      } else if (type === 'excellent') {
+        // 超棒音效：歡樂的上升音階 + 閃亮音效
+        const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+        notes.forEach((freq, i) => {
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, audioContext.currentTime + i * 0.1);
+          gain.gain.setValueAtTime(0.25, audioContext.currentTime + i * 0.1);
+          gain.gain.linearRampToValueAtTime(0.01, audioContext.currentTime + i * 0.1 + 0.25);
+          osc.start(audioContext.currentTime + i * 0.1);
+          osc.stop(audioContext.currentTime + i * 0.1 + 0.25);
+        });
+      } else if (type === 'good') {
+        // 不錯音效：溫暖的三和弦
+        const notes = [440, 554.37, 659.25];
+        notes.forEach((freq, i) => {
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+          gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+          gain.gain.linearRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+          osc.start(audioContext.currentTime);
+          osc.stop(audioContext.currentTime + 0.4);
+        });
+      } else if (type === 'okay') {
+        // 可以音效：輕快的兩個音符
+        oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime + 0.15);
+        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+      } else if (type === 'encourage') {
+        // 鼓勵音效：溫柔的單音
+        oscillator.frequency.setValueAtTime(392, audioContext.currentTime);
+        oscillator.type = 'sine';
+        gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
       }
     }
 
@@ -1170,33 +1273,60 @@
       const resultContainer = document.getElementById('text-result-container');
       if (!resultContainer) return;
 
-      let level, message, className;
+      let stars, icon, title, message, className, soundType;
 
-      if (similarity >= 60) {
-        level = '太棒了！';
-        message = '你記得很清楚！';
-        className = 'excellent';
-        if (textLength > 10) {
-          playSound('correct');
-        }
-      } else if (similarity >= 45) {
-        level = '不錯喔！';
-        message = '繼續加油！';
-        className = 'good';
-      } else if (similarity >= 30) {
-        level = '加油！';
-        message = '再多練習幾次';
-        className = 'fair';
+      if (similarity >= 80) {
+        // 等級 5：超棒
+        stars = '⭐⭐⭐⭐⭐';
+        icon = '🎉';
+        title = '超棒！';
+        message = '你好厲害，記得超級清楚！繼續保持喔～';
+        className = 'level-5';
+        soundType = 'excellent';
+      } else if (similarity >= 60) {
+        // 等級 4：不錯
+        stars = '⭐⭐⭐⭐';
+        icon = '😊';
+        title = '不錯喔！';
+        message = '記得很好呢！再練習一下就更棒了～';
+        className = 'level-4';
+        soundType = 'good';
+      } else if (similarity >= 40) {
+        // 等級 3：可以
+        stars = '⭐⭐⭐';
+        icon = '🌟';
+        title = '可以喔！';
+        message = '有進步囉！多練習幾次會更熟練的～';
+        className = 'level-3';
+        soundType = 'okay';
+      } else if (similarity >= 20) {
+        // 等級 2：還需要加油
+        stars = '⭐⭐';
+        icon = '💪';
+        title = '還需要加油！';
+        message = '沒關係，慢慢來～可以看看提示再試試看！';
+        className = 'level-2';
+        soundType = 'encourage';
       } else {
-        level = '再試一次';
-        message = '可以看提示或答案';
-        className = 'poor';
+        // 等級 1：練習練習再來
+        stars = '⭐';
+        icon = '🌱';
+        title = '練習練習再來喔！';
+        message = '每個人都是從練習開始的，你一定可以的！';
+        className = 'level-1';
+        soundType = 'encourage';
+      }
+
+      if (textLength > 5) {
+        playSound(soundType);
       }
 
       resultContainer.innerHTML = `
-        <div class="similarity-score ${className}">
-          <span style="font-size: 1.5rem; font-weight: bold;">${similarity}%</span>
-          <span style="margin-left: 10px;">${level} ${message}</span>
+        <div class="similarity-feedback ${className}">
+          <div class="feedback-icon">${icon}</div>
+          <div class="feedback-stars">${stars}</div>
+          <div class="feedback-title">${title}</div>
+          <div class="feedback-message">${message}</div>
         </div>
       `;
     }
