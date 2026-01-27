@@ -1202,8 +1202,10 @@
     }
 
     function calculateSimilarity(spoken, original) {
-      const cleanSpoken = spoken.replace(/[，。、！？「」\s]/g, '');
-      const cleanOriginal = original.replace(/[，。、！？「」\n\s]/g, '');
+      // 排除所有中英文標點符號
+      const punctuationRegex = /[，。、！？「」『』《》〈〉【】（）：；…—～·.,!?;:'"\-_()[\]{}<>@#$%^&*+=~`|\\\/\s]/g;
+      const cleanSpoken = spoken.replace(punctuationRegex, '');
+      const cleanOriginal = original.replace(punctuationRegex, '');
       
       let matchCount = 0;
       const windowSize = 2;
@@ -1221,7 +1223,7 @@
       const section = storyData[currentSection];
       let keywordMatches = 0;
       section.keywords.forEach(keyword => {
-        const cleanKeyword = keyword.replace(/[，。、！？「」\s]/g, '');
+        const cleanKeyword = keyword.replace(punctuationRegex, '');
         if (cleanSpoken.includes(cleanKeyword)) {
           keywordMatches++;
         }
